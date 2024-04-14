@@ -9,14 +9,17 @@ pub struct TcpPacket {
     pub data: Option<String>,
 }
 
+#[allow(dead_code)]
 pub enum TcpPacketCommand {
     None,
-    Health
+    Health,
+    SaveXML
 }
 
 pub fn get_command_string(packet: &TcpPacketCommand) -> String {
     match packet {
         TcpPacketCommand::Health => "Health".to_string(),
+        TcpPacketCommand::SaveXML => "Save XML".to_string(),
         TcpPacketCommand::None => "No Command".to_string(),
     }
 }
@@ -106,6 +109,7 @@ impl fmt::Display for TcpPacket {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let cmd = match self.command {
             TcpPacketCommand::Health => "Health",
+            TcpPacketCommand::SaveXML => "SaveXML",
             TcpPacketCommand::None => "No Command",
         };
 
