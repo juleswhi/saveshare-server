@@ -3,6 +3,9 @@ use std::net::{TcpListener, TcpStream};
 
 use packet::TcpPacket;
 
+use crate::packet::TcpPacketCommand;
+
+mod save;
 mod packet;
 
 fn main() {
@@ -34,6 +37,15 @@ fn handle_conn(mut stream: TcpStream) {
     }
 
     let packet = TcpPacket::from(received);
-
     println!("Request: {}", packet);
+
+    let res = TcpPacket::data(
+        TcpPacketCommand::Health,
+        "HELLO".to_string());
+
+    match stream.write_all(&res.to_bytes()) {
+        Ok(_) => println!("Sent data to client"),
+        Err(_) => println!("Could not send data to client")
+    }
+
 }
