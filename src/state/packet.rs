@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt};
+use std::fmt;
 
 pub static TCP_VERSION: u8 = 1;
 

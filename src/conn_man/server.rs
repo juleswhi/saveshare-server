@@ -4,9 +4,10 @@ use std::{
 };
 
 use crate::{
-    config::Config,
-    logger::{info, log, warn, LogType},
-    packet::{
+    conn_man::db::{self},
+    logging::config::Config,
+    logging::logger::{info, log, warn, LogType},
+    state::packet::{
         FromOption, TcpPacket,
         TcpPacketCommand::{self, Health},
     },
@@ -84,43 +85,5 @@ fn handle_request(packet: TcpPacket, stream: &mut TcpStream) {
         TcpPacketCommand::Save => handle_save(packet, stream),
         TcpPacketCommand::Get => handle_get(packet, stream),
         _ => {}
-    }
-}
-
-fn handle_health(_: TcpPacket, stream: &mut TcpStream) {
-    let cmd = TcpPacket::command(Health).to_bytes();
-    let buf: &[u8] = &cmd.as_slice();
-
-    let res = stream.write_all(buf);
-
-    match res {
-        Ok(_) => {}
-        Err(_) => warn("data did not send succesfully"),
-    }
-}
-
-fn handle_save(_: TcpPacket, stream: &mut TcpStream) {
-    let cmd = TcpPacket::command(TcpPacketCommand::Save).to_bytes();
-    let buf: &[u8] = &cmd.as_slice();
-
-    let res = stream.write_all(buf);
-
-    match res {
-        Ok(_) => {}
-        Err(_) => warn("data not sent succesfully"),
-    }
-}
-
-fn handle_get(_: TcpPacket, stream: &mut TcpStream) {
-    let cmd = TcpPacket::command(TcpPacketCommand::Get)
-        .to_bytes();
-
-    let buf: &[u8] = &cmd.as_slice();
-
-    let res = stream.write_all(buf);
-
-    match res {
-        Ok(_) => {}
-        Err(_) => warn("data not sent succesfully"),
     }
 }

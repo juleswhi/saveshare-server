@@ -1,15 +1,8 @@
-use server::Server;
-
-use crate::logger::LogType;
-
-mod config;
-mod db;
-mod server;
-mod save;
-mod packet;
-mod logger;
+mod conn_man;
+mod state;
+mod logging;
 
 fn main() {
-    let server = Server::new();
+    let server = conn_man::server::Server::new();
     server.start_server();
 }

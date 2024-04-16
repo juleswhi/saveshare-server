@@ -1,4 +1,4 @@
-use crate::LogType::{Info, Panic, Warn};
+use crate::logging::logger::LogType::{Info, Warn, Panic};
 
 use colored::Colorize;
 
