@@ -1,10 +1,20 @@
-use std::{io::{BufRead, BufReader, Write}, net::{TcpListener, TcpStream}};
+use std::{
+    io::{BufRead, BufReader, Write},
+    net::{TcpListener, TcpStream},
+};
 
-use crate::{config::Config, logger::{info, log, warn, LogType}, packet::{TcpPacket, TcpPacketCommand::{self, Health}}};
+use crate::{
+    config::Config,
+    logger::{info, log, warn, LogType},
+    packet::{
+        FromOption, TcpPacket,
+        TcpPacketCommand::{self, Health},
+    },
+};
 
 pub struct Server {
     pub ip: String,
-    pub port: u32
+    pub port: u32,
 }
 
 #[allow(dead_code)]
@@ -13,15 +23,12 @@ impl Server {
         let conf = Config::get_from_file().expect("Could not find config.json");
         Server {
             ip: conf.ip,
-            port: conf.port
+            port: conf.port,
         }
     }
 
     pub fn from(ip: String, port: u32) -> Self {
-        Server {
-            port,
-            ip
-        }
+        Server { port, ip }
     }
 
     pub fn get_ip(&self) -> String {
@@ -49,7 +56,6 @@ impl Server {
 }
 
 fn handle_conn(mut stream: TcpStream) {
-    info("Recieved connection");
     let mut buf_reader = BufReader::new(&mut stream);
     let received: &[u8];
 
@@ -61,7 +67,13 @@ fn handle_conn(mut stream: TcpStream) {
         }
     }
 
-    let packet = TcpPacket::from(received);
+    let mut packet: TcpPacket = TcpPacket::new();
+
+    match TcpPacket::from(received) {
+        FromOption::Packet(v) => packet = v,
+        FromOption::Status(s) => warn(format!("Invalid status code from client: {}", s).as_str()),
+        _ => warn("Request with invalid tcp"),
+    };
 
     handle_request(packet, &mut stream);
 }
@@ -69,27 +81,46 @@ fn handle_conn(mut stream: TcpStream) {
 fn handle_request(packet: TcpPacket, stream: &mut TcpStream) {
     match packet.command {
         TcpPacketCommand::Health => handle_health(packet, stream),
-        TcpPacketCommand::SaveXML => handle_save_xml(packet, stream),
+        TcpPacketCommand::Save => handle_save(packet, stream),
+        TcpPacketCommand::Get => handle_get(packet, stream),
         _ => {}
     }
 }
 
 fn handle_health(_: TcpPacket, stream: &mut TcpStream) {
-    let cmd = TcpPacket::command(Health)
-        .to_bytes();
-    let buf: &[u8] = &cmd
-        .as_slice();
-
-    info("Received Health Request");
+    let cmd = TcpPacket::command(Health).to_bytes();
+    let buf: &[u8] = &cmd.as_slice();
 
     let res = stream.write_all(buf);
 
     match res {
-        Ok(_) => info("data sent succesfully"),
-        Err(_) => warn("data did not send succesfully")
+        Ok(_) => {}
+        Err(_) => warn("data did not send succesfully"),
     }
 }
 
-fn handle_save_xml(_packet: TcpPacket, _stream: &mut TcpStream) {
-    // query database
+fn handle_save(_: TcpPacket, stream: &mut TcpStream) {
+    let cmd = TcpPacket::command(TcpPacketCommand::Save).to_bytes();
+    let buf: &[u8] = &cmd.as_slice();
+
+    let res = stream.write_all(buf);
+
+    match res {
+        Ok(_) => {}
+        Err(_) => warn("data not sent succesfully"),
+    }
+}
+
+fn handle_get(_: TcpPacket, stream: &mut TcpStream) {
+    let cmd = TcpPacket::command(TcpPacketCommand::Get)
+        .to_bytes();
+
+    let buf: &[u8] = &cmd.as_slice();
+
+    let res = stream.write_all(buf);
+
+    match res {
+        Ok(_) => {}
+        Err(_) => warn("data not sent succesfully"),
+    }
 }

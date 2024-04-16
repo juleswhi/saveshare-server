@@ -1,4 +1,4 @@
-use crate::{logger::{log, LogType}, save::Save};
+use crate::{logger::warn, save::Save};
 
 use rusqlite::Connection;
 
@@ -7,9 +7,8 @@ pub fn get_saves() -> Vec<Save> {
     let conn = Connection::open("Saveshare.db");
 
     if !conn.is_ok() {
-        log(LogType::Warn("Could not connection to db".to_string()));
+        warn("Could not connection to db");
     }
 
     return vec![];
-
 }
