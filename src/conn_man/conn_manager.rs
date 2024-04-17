@@ -1,7 +1,11 @@
-use crate::state::packet::*;
+use std::{io::Write, net::TcpStream};
 
-fn handle_health(_: TcpPacket, stream: &mut TcpStream) {
-    let cmd = TcpPacket::command(Health).to_bytes();
+use crate::{logging::logger::warn, state::packet::*};
+
+use super::db;
+
+pub fn handle_health(_: TcpPacket, stream: &mut TcpStream) {
+    let cmd = TcpPacket::command(TcpPacketCommand::Health).to_bytes();
     let buf: &[u8] = &cmd.as_slice();
 
     let res = stream.write_all(buf);
@@ -12,7 +16,7 @@ fn handle_health(_: TcpPacket, stream: &mut TcpStream) {
     }
 }
 
-fn handle_save(_: TcpPacket, stream: &mut TcpStream) {
+pub fn handle_save(_: TcpPacket, stream: &mut TcpStream) {
     let mut cmd = TcpPacket::command(TcpPacketCommand::Save);
 
     let save_result = db::get_saves();
@@ -32,7 +36,7 @@ fn handle_save(_: TcpPacket, stream: &mut TcpStream) {
     }
 }
 
-fn handle_get(_: TcpPacket, stream: &mut TcpStream) {
+pub fn handle_get(_: TcpPacket, stream: &mut TcpStream) {
     let mut cmd = TcpPacket::command(TcpPacketCommand::Get);
 
     let get_result = db::save();

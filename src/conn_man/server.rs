@@ -1,17 +1,18 @@
 use std::{
-    io::{BufRead, BufReader, Write},
+    io::{BufRead, BufReader},
     net::{TcpListener, TcpStream},
 };
 
 use crate::{
-    conn_man::db::{self},
     logging::config::Config,
     logging::logger::{info, log, warn, LogType},
     state::packet::{
         FromOption, TcpPacket,
-        TcpPacketCommand::{self, Health},
+        TcpPacketCommand::{self},
     },
 };
+
+use crate::conn_man::prelude::*;
 
 pub struct Server {
     pub ip: String,
@@ -81,9 +82,9 @@ fn handle_conn(mut stream: TcpStream) {
 
 fn handle_request(packet: TcpPacket, stream: &mut TcpStream) {
     match packet.command {
-        TcpPacketCommand::Health => handle_health(packet, stream),
-        TcpPacketCommand::Save => handle_save(packet, stream),
-        TcpPacketCommand::Get => handle_get(packet, stream),
+        TcpPacketCommand::Health => conn_manager::handle_health(packet, stream),
+        TcpPacketCommand::Save => conn_manager::handle_save(packet, stream),
+        TcpPacketCommand::Get => conn_manager::handle_get(packet, stream),
         _ => {}
     }
 }
