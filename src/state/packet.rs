@@ -69,6 +69,7 @@ impl TcpPacket {
             return FromOption::None;
         }
 
+        // Invalid Status Code
         if buf[1] < 20 || buf[1] > 29 {
             return FromOption::Status(buf[1]);
         }
@@ -87,6 +88,7 @@ impl TcpPacket {
             stat_code: buf[1],
             command,
             length: u16::from_le_bytes(len),
+            // Data should just be rest of bytes
             data: Some(String::from_utf8(buf[5..].to_vec()).unwrap()),
         })
     }
@@ -109,6 +111,16 @@ impl TcpPacket {
             length: data.len() as u16,
             data: Some(data)
         }
+    }
+
+    pub fn add_command(&mut self, command: TcpPacketCommand) -> &Self {
+        self.command = command;
+        self
+    }
+
+    pub fn add_data(&mut self, data: String) -> &Self {
+        self.data = Some(data);
+        self
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {

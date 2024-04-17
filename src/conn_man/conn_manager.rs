@@ -5,7 +5,10 @@ use crate::{logging::logger::warn, state::packet::*};
 use super::db;
 
 pub fn handle_health(_: TcpPacket, stream: &mut TcpStream) {
-    let cmd = TcpPacket::command(TcpPacketCommand::Health).to_bytes();
+    let cmd = TcpPacket::new()
+        .add_command(TcpPacketCommand::Health)
+        .to_bytes();
+
     let buf: &[u8] = &cmd.as_slice();
 
     let res = stream.write_all(buf);
